@@ -12,37 +12,40 @@ class StringMaxMultiplicationFinder
   end
 
   def find
-    digits = []
-
     input_string.each_char.with_index do |character, index|
-      if digit_character?(character)
-        digit = Integer(character)
-        next if digit == 0
-        digits << digit
-
-        input_string[index+1..-1].each_char do |character|
-          if digit_character?(character)
-            break if digit == 0
-            digit = Integer(character)
-            digits << digit
-
-            if digits.length == mult_size
-              multiply_digits(digits)
-              digits = []
-              break
-            end
-          else
-            digits = []
-            break
-          end
-        end
+      parse_digit(character).tap do |digit|
+        find_in_sub_string(input_string[index..-1]) if digit && digit != 0
       end
     end
 
-    max_multiplication == 0 ? nil : max_multiplication
+    result
   end
 
   private
+
+  def find_in_sub_string(sub_string)
+    return result if sub_string.length < mult_size
+
+    digits = []
+    sub_string.each_char do |character|
+      parse_digit(character).tap do |digit|
+        if digit && digit != 0
+          digits << digit
+
+          if digits.size == mult_size
+            multiply_digits(digits)
+            return
+          end
+        else
+          return
+        end
+      end
+    end
+  end
+
+  def result
+    max_multiplication == 0 ? nil : max_multiplication
+  end
 
   def multiply_digits(digits)
     multiplication = digits.inject(:*)
@@ -51,24 +54,24 @@ class StringMaxMultiplicationFinder
     end
   end
 
-  #checking of Integer via exception handling is quite slow:
-  def digit_character?(character)
-    Integer(character).is_a?(Integer)
+  def parse_digit(character)
+    Integer(character)
   rescue ArgumentError, TypeError
-    false
+    nil
   end
 end
 
-s = 'sdf03030252221234ывалодывлаоывлдао947984934-двыладлвыадлоыв939854094509069569046ьkjdhsdkfi09348493200234'
+# Benchmark test
+# s = 'sdf03030252221234ывалодывлаоывлдао947984934-двыладлвыадлоыв939854094509069569046ьkjdhsdkfi09348493200234'
+#
+# finder = StringMaxMultiplicationFinder.new(s)
+# p Benchmark.measure { 50_000.times { finder.find } }.real
 
-finder = StringMaxMultiplicationFinder.new(s)
-p Benchmark.measure { 50_000.times { finder.find } }.real
-
-describe 'String max multiplier' do
+describe 'StringMaxMultiplicationFinder' do
   context 'multiplication present' do
     test_strings = {
       'abc12345def' => 120,
-      'sdf03030252221234' => 40,
+      '03030252221234' => 40,
       'sdf03030252221234ывалодывлаоывлдао947984934-двыладлвыадлоыв939854094509069569046ьkjdhsdkfi09348493200234' => 2592
     }
 
