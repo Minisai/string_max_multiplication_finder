@@ -1,5 +1,4 @@
 require 'rspec'
-require 'pry'
 require 'benchmark'
 
 class StringMaxMultiplicationFinder
@@ -13,9 +12,8 @@ class StringMaxMultiplicationFinder
 
   def find
     input_string.each_char.with_index do |character, index|
-      parse_digit(character).tap do |digit|
-        find_in_sub_string(input_string[index..-1]) if digit && digit != 0
-      end
+      digit = character.to_i
+      find_in_sub_string(input_string[index..-1]) if digit != 0
     end
 
     result
@@ -28,17 +26,16 @@ class StringMaxMultiplicationFinder
 
     digits = []
     sub_string.each_char do |character|
-      parse_digit(character).tap do |digit|
-        if digit && digit != 0
-          digits << digit
+      digit = character.to_i
+      if digit != 0
+        digits << digit
 
-          if digits.size == mult_size
-            multiply_digits(digits)
-            return
-          end
-        else
+        if digits.size == mult_size
+          multiply_digits(digits)
           return
         end
+      else
+        return
       end
     end
   end
@@ -53,15 +50,9 @@ class StringMaxMultiplicationFinder
       @max_multiplication = multiplication
     end
   end
-
-  def parse_digit(character)
-    Integer(character)
-  rescue ArgumentError, TypeError
-    nil
-  end
 end
 
-# Benchmark test
+# # Benchmark test
 # s = 'sdf03030252221234ывалодывлаоывлдао947984934-двыладлвыадлоыв939854094509069569046ьkjdhsdkfi09348493200234'
 #
 # finder = StringMaxMultiplicationFinder.new(s)
